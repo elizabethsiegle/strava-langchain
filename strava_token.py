@@ -1,11 +1,13 @@
 import json
 import os
 import requests
-import time
+from dotenv import dotenv_values
+
+config = dotenv_values(".env")
 
 # Initial Settings
 client_id = '46109'
-client_secret = 'dee1c0db27c85d6ce23b9d6269a8b792a50eb703'
+client_secret = config.get('STRAVA_CLIENT_SECRET')
 redirect_uri = 'http://localhost/'
 
 # Authorization URL
@@ -14,22 +16,25 @@ request_url = f'http://www.strava.com/oauth/authorize?client_id={client_id}' \
                   f'&approval_prompt=force' \
                   f'&scope=profile:read_all,activity:read_all'
 
-# User prompt showing the Authorization URL
-# and asks for the code
+# User prompt showing the Authorization URL asking for the code
 print('Click here:', request_url)
-print('Please authorize the app and copy&paste below the generated code!')
-print('P.S: you can find the code in the URL')
-code = input('Insert the code from the url: ')
+print('Please authorize the app and copy/paste the generated code in the URL below')
+code = input('Paste the code from the URL: ')
 
 # Get the access token
-token = requests.post(url='https://www.strava.com/api/v3/oauth/token',
-                       data={'client_id': client_id,
-                             'client_secret': client_secret,
-                             'code': code,
-                             'grant_type': 'authorization_code'})
+token = requests.post(
+    url='https://www.strava.com/api/v3/oauth/token',
+    data= {
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'code': code,
+        'grant_type': 'authorization_code'
+        })
 
-#Save json response as a variable
+#print token s a variable
 strava_token = token.json()
+print('strava_token ', strava_token['access_token'])
+#print('complete strava_token obj ', strava_token)
 
-with open('strava_token.json', 'w') as outfile:
-  json.dump(strava_token, outfile)
+# with open('strava_token.json', 'w') as outfile:
+#   json.dump(strava_token, outfile)
