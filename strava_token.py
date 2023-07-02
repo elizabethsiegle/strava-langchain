@@ -33,7 +33,7 @@ token = requests.post(
 
 #print token s a variable
 strava_token = token.json()
-print('strava_token ', strava_token['access_token'])
+print('strava_token to replace in .env', strava_token['access_token'])
 #print('complete strava_token obj ', strava_token)
 
 # with open('strava_token.json', 'w') as outfile:

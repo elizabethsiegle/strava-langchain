@@ -26,5 +26,7 @@ api_chain = OpenAPIEndpointChain.from_api_operation(
     verbose=True,
     return_intermediate_steps=True
 )
-print(api_chain("How many miles did the user run in her last activity?"))
+output = api_chain("How many miles was the user's last workout of type run?")
+#print(output)
+print(output["intermediate_steps"])
 
