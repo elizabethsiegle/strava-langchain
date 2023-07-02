@@ -50,7 +50,7 @@ data_df.to_csv('runs.csv')
 # walks = activities.loc[activities['type'] == 'Walk']
 # walks.to_csv('walks.csv')
 
-from langchain import SerpAPIWrapper, LLMChain #LLMChain?
+from langchain import SerpAPIWrapper, LLMChain 
 from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, AgentOutputParser, create_pandas_dataframe_agent
 from langchain.chains import LLMChain
 from langchain.llms import OpenAI
@@ -59,6 +59,8 @@ from langchain.schema import AgentAction, AgentFinish, HumanMessage
 from langchain.chat_models import ChatOpenAI
 from typing import List, Union
 import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 os.environ["OPENAI_API_KEY"] = config.get('OPENAI_API_KEY')
 
 search = SerpAPIWrapper(serpapi_api_key=config.get('SERPAPI_API_KEY'))
@@ -124,8 +126,9 @@ Marathon date: {marathon_date}
 Her average distance each time she runs:{avg_distance}
 Her average moving time of each run: {avg_moving_time}
 Her average mile time: {avg_mile}
-Make her a marathon training plan to follow, including a list of days between {agent_output_day_answer} and {marathon_date} with a run or workout. 
-There should be {agent_output_day_answer} workouts that get slightly progressively longer so she can be ready for her marathon, but she can't get injured or burned out so there should be no more than one long run each week. A long run should not be longer than 20 miles. The plan should also include rest days, sprints, and can include cross-training like bike rides and swimming. You have access to the following tools:
+Make her a marathon training plan to follow, including a list of days between {agent_output_day_answer} and {marathon_date} with a run or workout. The first day should not be a rest day.
+There should be {agent_output_day_answer} workouts that get slightly progressively longer so she can be ready for her marathon, but she can't get injured or burned out so there should be no more than one long run each week. 
+A long run should not be longer than 20 miles. The plan should also include rest days, sprints, and can include cross-training like bike rides and swimming. After each day, start the next day's workout on a new line  You have access to the following tools:
 {tools}
 Running calendar plan with days of the month:
 """
@@ -190,4 +193,19 @@ agent = LLMSingleActionAgent(
     allowed_tools=tool_names
 )
 agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
-agent_executor.run({"agent_output_day_answer":agent_output_day_answer, "marathon_date":marathon_date, "avg_mile" :avg_mile, "avg_distance" :avg_distance, "avg_moving_time": avg_moving_time})
+plan = agent_executor({"agent_output_day_answer":agent_output_day_answer, "marathon_date":marathon_date, "avg_mile" :avg_mile, "avg_distance" :avg_distance, "avg_moving_time": avg_moving_time})
+
+message = Mail(
+    from_email='langchain_sendgrid_marathon_trainer@sf.com',
+    to_emails='lizzie.siegle@gmail.com',
+    subject='Your AI-generated marathon training plan',
+    html_content='<strong>Good luck at your marathon on %s</strong>\n\nHere is your plan:\n\n%s'%(marathon_date, plan['output']))
+
+os.environ["SENDGRID_API_KEY"] = config.get('SENDGRID_API_KEY')
+sg = SendGridAPIClient()
+response = sg.send(message)
+code, body, headers = response.status_code, response.body, response.headers
+print(f"Response Code: {code} ")
+print(f"Response Body: {body} ")
+print(f"Response Headers: {headers} ")
+print("Message Sent!")
