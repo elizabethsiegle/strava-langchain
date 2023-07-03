@@ -5,6 +5,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) #I forget wh
 config = dotenv_values(".env") #pip install chromadb, tabulate
 
 import pandas as pd #dataframe
+import numpy as np
 import re
 import datetime as dt #datetime for formatting iso 8601 date
 from datetime import date, timedelta #convert seconds to mins, hours, etc
@@ -25,8 +26,32 @@ activities = pd.json_normalize(my_dataset)
 # print(activities.shape) #dimensions of the table.
 
 #Create new dataframe with only columns I care about #max_time
-cols = ['name', 'type', 'distance', 'moving_time']
+cols = ['name', 'type', 'distance', 'moving_time', 'total_elevation_gain']
 activities = activities[cols]
+activities.to_csv('activities.csv', index=False)
+
+# loop through activities data frame to get number of activities of each type
+num_runs = len(activities.loc[activities['type'] == 'Run'])
+num_walks = len(activities.loc[(activities['type'] == 'Walk') & (activities['total_elevation_gain'] > 90)])
+num_rides = len(activities.loc[activities['type'] == 'Ride'])
+num_elliptical = len(activities.loc[activities['type'] == 'Elliptical'])
+num_weight_training = len(activities.loc[activities['type'] == 'WeightTraining'])
+num_swims = 0
+num_tennis = 0
+for i in activities['name'].values:
+    if 'swim' in i.lower():
+        num_swims +=1
+    if 'tennis' in i.lower():
+        num_tennis +=1
+
+print('num_runs ', num_runs)
+print('num_walks ', num_walks)
+print('num_rides ', num_rides)
+print('num_elliptical ', num_elliptical)
+print('num_weight_training ', num_weight_training)
+print('num_swims ', num_swims)
+print('num_tennis ', num_tennis)
+
 
 # make CSV of runs
 runs = activities.loc[activities['type'] == 'Run']
@@ -42,25 +67,27 @@ data_df['distance'] = data_df['distance'].map(lambda x: convert_to_miles(x))
 #data_df['moving_time'] = data_df['moving_time'].astype(str).map(lambda x: x[7:]) #slices off 0 days from moving_time
 data_df.to_csv('runs.csv')
 
-# # make CSV of rides
-# rides = activities.loc[activities['type'] == 'Ride']
-# rides.to_csv('rides.csv')
-
-# # make CSV of walks
-# walks = activities.loc[activities['type'] == 'Walk']
-# walks.to_csv('walks.csv')
-
-from langchain import SerpAPIWrapper, LLMChain 
+from langchain import SerpAPIWrapper, LLMChain, PromptTemplate
 from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, AgentOutputParser, create_pandas_dataframe_agent
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
-from langchain.llms import OpenAI
+from langchain.document_loaders import TextLoader
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.indexes import VectorstoreIndexCreator
+from langchain.llms import OpenAI, GPT4All
 from langchain.prompts import BaseChatPromptTemplate
 from langchain.schema import AgentAction, AgentFinish, HumanMessage
-from langchain.chat_models import ChatOpenAI
+
 from typing import List, Union
 import os
+import base64
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from sendgrid.helpers.mail import (Mail, Attachment, FileContent, FileName, FileType, Disposition)
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.lib.pagesizes import letter
 os.environ["OPENAI_API_KEY"] = config.get('OPENAI_API_KEY')
 
 search = SerpAPIWrapper(serpapi_api_key=config.get('SERPAPI_API_KEY'))
@@ -88,6 +115,7 @@ def get_avg_mile_time(df):
 
 avg_distance = data_df['distance'].mean()
 avg_moving_time = data_df['moving_time'].mean()
+max_distance_ran = data_df['distance'].max()
 avg_miles = []
 for a,b in zip(data_df.distance, data_df.moving_time):
     avg_miles.append((b/a)/60)
@@ -126,9 +154,16 @@ Marathon date: {marathon_date}
 Her average distance each time she runs:{avg_distance}
 Her average moving time of each run: {avg_moving_time}
 Her average mile time: {avg_mile}
-Make her a marathon training plan to follow, including a list of days between {agent_output_day_answer} and {marathon_date} with a run or workout. The first day should not be a rest day.
-There should be {agent_output_day_answer} workouts that get slightly progressively longer so she can be ready for her marathon, but she can't get injured or burned out so there should be no more than one long run each week. 
-A long run should not be longer than 20 miles. The plan should also include rest days, sprints, and can include cross-training like bike rides and swimming. After each day, start the next day's workout on a new line  You have access to the following tools:
+The maximum miles she's run: {max_distance_ran}
+Total miles run weekly should eventually be around 45 miles. The number of miles run weekly should gradually increase over time.
+For each week, include the total number of miles to be run for that week.
+The longest run should be around 20 miles and take place 2 weeks before {marathon_date}. 
+The first day should not be a rest day.
+For each running distance you recommend, also suggest easy, medium, or hard pace based on her {avg_moving_time} and {avg_mile}. 
+Make her a marathon training plan to follow, including a list of days between {agent_output_day_answer} and {marathon_date} with a run or workout. 
+There should be {agent_output_day_answer} workouts that get slightly progressively longer so she can be ready for her marathon, but she can't get injured or burned out so there should be no more than one long run (a long run is any run over 10 miles) each week. 
+The plan should also include rest days, sprints, and can include cross-training like cycling and swimming. After each day, start the next day's workout on a new line and include the date. 
+You have access to the following tools:
 {tools}
 Running calendar plan with days of the month:
 """
@@ -160,7 +195,7 @@ prompt = CustomPromptTemplate(
     tools=tools,
     # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
     # This includes the `intermediate_steps` variable because that is needed
-    input_variables=["agent_output_day_answer", "marathon_date", "avg_mile","avg_distance", "avg_moving_time", "intermediate_steps"]
+    input_variables=["agent_output_day_answer", "marathon_date", "avg_mile","avg_distance", "avg_moving_time", "max_distance_ran", "intermediate_steps"]
 )
 class CustomOutputParser(AgentOutputParser):
     def parse(self, llm_output: str) -> Union[AgentAction, AgentFinish]:
@@ -193,14 +228,47 @@ agent = LLMSingleActionAgent(
     allowed_tools=tool_names
 )
 agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
-plan = agent_executor({"agent_output_day_answer":agent_output_day_answer, "marathon_date":marathon_date, "avg_mile" :avg_mile, "avg_distance" :avg_distance, "avg_moving_time": avg_moving_time})
+plan = agent_executor({"agent_output_day_answer":agent_output_day_answer, "marathon_date":marathon_date, "avg_mile" :avg_mile, "avg_distance" :avg_distance, "avg_moving_time": avg_moving_time, "max_distance_ran": max_distance_ran})
 
 message = Mail(
     from_email='langchain_sendgrid_marathon_trainer@sf.com',
     to_emails='lizzie.siegle@gmail.com',
     subject='Your AI-generated marathon training plan',
-    html_content='<strong>Good luck at your marathon on %s</strong>\n\nHere is your plan:\n\n%s'%(marathon_date, plan['output']))
+    html_content='<strong>Good luck at your marathon on %s</strong>!\n\nYour plan is attached.'%(marathon_date))
 
+styles = getSampleStyleSheet()
+styleN = styles['Normal']
+styleH = styles['Heading1']
+story = []
+
+pdf_name = 'plan.pdf'
+doc = SimpleDocTemplate(
+    pdf_name,
+    pagesize=letter,
+    bottomMargin=.4 * inch,
+    topMargin=.6 * inch,
+    rightMargin=.8 * inch,
+    leftMargin=.8 * inch)
+
+
+P = Paragraph(plan['output'], styleN)
+story.append(P)
+
+doc.build(
+    story,
+)
+with open(doc, 'rb') as f:
+    data = f.read()
+    f.close()
+encoded_file = base64.b64encode(data).decode()
+
+attachedFile = Attachment(
+    FileContent(encoded_file),
+    FileName('attachment.pdf'),
+    FileType('application/pdf'),
+    Disposition('attachment')
+)
+message.attachment = attachedFile
 os.environ["SENDGRID_API_KEY"] = config.get('SENDGRID_API_KEY')
 sg = SendGridAPIClient()
 response = sg.send(message)
