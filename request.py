@@ -26,8 +26,9 @@ activities = pd.json_normalize(my_dataset)
 # print(activities.shape) #dimensions of the table.
 
 #Create new dataframe with only columns I care about #max_time
-cols = ['name', 'type', 'distance', 'moving_time', 'total_elevation_gain']
+cols = ['name', 'type', 'distance', 'moving_time', 'total_elevation_gain', 'start_date']
 activities = activities[cols]
+activities = activities[activities["start_date"].str.contains("2021") == False] #remove items from 2021, only include workouts from 2022 and 2023
 activities.to_csv('activities.csv', index=False)
 
 # loop through activities data frame to get number of activities of each type
@@ -43,16 +44,7 @@ for i in activities['name'].values:
         num_swims +=1
     if 'tennis' in i.lower():
         num_tennis +=1
-
-print('num_runs ', num_runs)
-print('num_walks ', num_walks)
-print('num_rides ', num_rides)
-print('num_elliptical ', num_elliptical)
-print('num_weight_training ', num_weight_training)
-print('num_swims ', num_swims)
-print('num_tennis ', num_tennis)
-
-
+cross_training_options = activities['type'].unique()
 # make CSV of runs
 runs = activities.loc[activities['type'] == 'Run']
 runs.to_csv('runs.csv', index=False) #index=False writes out weird unnamed index column in pandas df
@@ -67,7 +59,7 @@ data_df['distance'] = data_df['distance'].map(lambda x: convert_to_miles(x))
 #data_df['moving_time'] = data_df['moving_time'].astype(str).map(lambda x: x[7:]) #slices off 0 days from moving_time
 data_df.to_csv('runs.csv')
 
-from langchain import SerpAPIWrapper, LLMChain, PromptTemplate
+from langchain import SerpAPIWrapper, LLMChain
 from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, AgentOutputParser, create_pandas_dataframe_agent
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.chat_models import ChatOpenAI
@@ -120,9 +112,9 @@ avg_miles = []
 for a,b in zip(data_df.distance, data_df.moving_time):
     avg_miles.append((b/a)/60)
     avg_mile= sum(avg_miles) / len(avg_miles)
-print(avg_distance)
-print(avg_moving_time)
-print(avg_mile)
+print('avg_distance ', avg_distance)
+print('avg_moving_time ', avg_moving_time)
+print('avg_mile', avg_mile)
 marathon_date = "December, 10, 2023" #hard-coded marathon_date
 
 tools = [
@@ -155,6 +147,7 @@ Her average distance each time she runs:{avg_distance}
 Her average moving time of each run: {avg_moving_time}
 Her average mile time: {avg_mile}
 The maximum miles she's run: {max_distance_ran}
+Since 2022, she has gone on {num_runs} runs, {num_walks} walks, {num_rides} rides, {num_elliptical} elliptical workouts, {num_weight_training} weight training workouts, {num_swims} swims, and played tennis {num_tennis} times. Use that data to shape her cross-training in her marathon training plan.
 Total miles run weekly should eventually be around 45 miles. The number of miles run weekly should gradually increase over time.
 For each week, include the total number of miles to be run for that week.
 The longest run should be around 20 miles and take place 2 weeks before {marathon_date}. 
@@ -162,9 +155,7 @@ The first day should not be a rest day.
 For each running distance you recommend, also suggest easy, medium, or hard pace based on her {avg_moving_time} and {avg_mile}. 
 Make her a marathon training plan to follow, including a list of days between {agent_output_day_answer} and {marathon_date} with a run or workout. 
 There should be {agent_output_day_answer} workouts that get slightly progressively longer so she can be ready for her marathon, but she can't get injured or burned out so there should be no more than one long run (a long run is any run over 10 miles) each week. 
-The plan should also include rest days, sprints, and can include cross-training like cycling and swimming. After each day, start the next day's workout on a new line and include the date. 
-You have access to the following tools:
-{tools}
+The plan should also include rest days, sprints, and can include cross-training like{cross_training_options}. After each day, start the next day's workout on a new line and include the date. She should have at least 2 cross-training workouts a week.
 Running calendar plan with days of the month:
 """
 
@@ -190,17 +181,39 @@ class CustomPromptTemplate(BaseChatPromptTemplate):
         kwargs["tool_names"] = ", ".join([tool.name for tool in self.tools])
         formatted = self.template.format(**kwargs)
         return [HumanMessage(content=formatted)]
+    
 prompt = CustomPromptTemplate(
     template=coach_template,
     tools=tools,
     # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
     # This includes the `intermediate_steps` variable because that is needed
-    input_variables=["agent_output_day_answer", "marathon_date", "avg_mile","avg_distance", "avg_moving_time", "max_distance_ran", "intermediate_steps"]
+    input_variables=["agent_output_day_answer", "marathon_date", "avg_mile","avg_distance", "avg_moving_time", "max_distance_ran", "num_runs", "num_walks", "num_rides", "num_elliptical", "num_weight_training", "num_swims", "num_tennis", "cross_training_options", "intermediate_steps"]
 )
 class CustomOutputParser(AgentOutputParser):
     def parse(self, llm_output: str) -> Union[AgentAction, AgentFinish]:
         # Check if agent should finish
         if "Day 1:" in llm_output:
+            return AgentFinish(
+                # Return values is generally always a dictionary with a single `output` key
+                # It is not recommended to try anything else at the moment :)
+                return_values={"output": llm_output.split("Final Answer:")[-1].strip()},
+                log=llm_output,
+            )
+        elif "Week 1:" in llm_output:
+            return AgentFinish(
+                # Return values is generally always a dictionary with a single `output` key
+                # It is not recommended to try anything else at the moment :)
+                return_values={"output": llm_output.split("Final Answer:")[-1].strip()},
+                log=llm_output,
+            )
+        elif "Marathon day" in llm_output:
+            return AgentFinish(
+                # Return values is generally always a dictionary with a single `output` key
+                # It is not recommended to try anything else at the moment :)
+                return_values={"output": llm_output.split("Final Answer:")[-1].strip()},
+                log=llm_output,
+            )
+        elif "Taper" in llm_output:
             return AgentFinish(
                 # Return values is generally always a dictionary with a single `output` key
                 # It is not recommended to try anything else at the moment :)
@@ -228,7 +241,7 @@ agent = LLMSingleActionAgent(
     allowed_tools=tool_names
 )
 agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
-plan = agent_executor({"agent_output_day_answer":agent_output_day_answer, "marathon_date":marathon_date, "avg_mile" :avg_mile, "avg_distance" :avg_distance, "avg_moving_time": avg_moving_time, "max_distance_ran": max_distance_ran})
+plan = agent_executor({"agent_output_day_answer":agent_output_day_answer, "marathon_date":marathon_date, "avg_mile" :avg_mile, "avg_distance" :avg_distance, "avg_moving_time": avg_moving_time, "max_distance_ran": max_distance_ran, "num_runs": num_runs, "num_walks": num_walks, "num_rides": num_rides, "num_elliptical": num_elliptical, "num_weight_training": num_weight_training, "num_swims": num_swims, "num_tennis": num_tennis, "cross_training_options": cross_training_options})
 
 message = Mail(
     from_email='langchain_sendgrid_marathon_trainer@sf.com',
@@ -257,7 +270,7 @@ story.append(P)
 doc.build(
     story,
 )
-with open(doc, 'rb') as f:
+with open(pdf_name, 'rb') as f:
     data = f.read()
     f.close()
 encoded_file = base64.b64encode(data).decode()
