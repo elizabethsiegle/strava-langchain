@@ -1,3 +1,4 @@
+# TODO: check how to input data/stats/facts into LLM without passing vars to template as input vars
 import requests
 import urllib3
 from dotenv import dotenv_values
@@ -8,7 +9,8 @@ import pandas as pd #dataframe
 import numpy as np
 import re
 import datetime as dt #datetime for formatting iso 8601 date
-from datetime import date, timedelta #convert seconds to mins, hours, etc
+from datetime import date #convert seconds to mins, hours, etc
+from dateutil import rrule
 
 activities_url = "https://www.strava.com/api/v3/athlete/activities"
 
@@ -25,7 +27,7 @@ activities = pd.json_normalize(my_dataset)
 # print(activities.columns) # list all columns in the table
 # print(activities.shape) #dimensions of the table.
 
-#Create new dataframe with only columns I care about #max_time
+#Create new dataframe with specific columns #max_time
 cols = ['name', 'type', 'distance', 'moving_time', 'total_elevation_gain', 'start_date']
 activities = activities[cols]
 activities = activities[activities["start_date"].str.contains("2021") == False] #remove items from 2021, only include workouts from 2022 and 2023
@@ -132,31 +134,29 @@ tools = [
 ]
 llm = ChatOpenAI(temperature=0)
 pd_agent = create_pandas_dataframe_agent(OpenAI(temperature=0), data_df, verbose=True) #csv agent?
-# the CSV Agent can be used to load data from CSV files and perform queries, while the Pandas Agent can be used to load data from Pandas data frames and process user queries. Agents can be chained together to build more complex applications.
+# csv agent can be used to load data from CSV files and perform queries, while the Pandas Agent can be used to load data from Pandas data frames and process user queries. Agents can be chained together to build more complex applications.
 
 agent_output_day_answer =calc_days_till_marathon() #pd_agent.run("as an integer, how many days from today until my marathon on December 10, 2023") #with tool for dates
 print("days to marathon: ", agent_output_day_answer)
 num_rows_in_dataframe = num_rows_in_dataframe(data_df)
-pd_agent.run("Calculate Lizzie's average distance, average moving time converted to minutes, and quartiles of distance and moving time. Calculate other statistics you think would be helpful for marathon training based on the data in {data_df}.")
-
+pd_output = pd_agent.run("Calculate Lizzie's average distance, average moving time converted to minutes, maximum moving time, maximum disrance, and the number of times she's run, ridden her bike, played tennis, weight trained, and swam. Calculate other statistics you think would be helpful for marathon training in order to create a personalized marathon training plan for a well-rounded athlete who has never trained for a half-marathon.")
 coach_template = """You are a personal marathon trainer. You know a lot about your student, like her previous runs from the past few months, her average mile time, her average moving time, and up until today. 
-Here is some context about the time and location of the marathon she is training for:
-Today: {agent_output_day_answer}
+Here is some context about the marathon you will help her train for:
 Marathon date: {marathon_date}
-Her average distance each time she runs:{avg_distance}
-Her average moving time of each run: {avg_moving_time}
-Her average mile time: {avg_mile}
-The maximum miles she's run: {max_distance_ran}
-Since 2022, she has gone on {num_runs} runs, {num_walks} walks, {num_rides} rides, {num_elliptical} elliptical workouts, {num_weight_training} weight training workouts, {num_swims} swims, and played tennis {num_tennis} times. Use that data to shape her cross-training in her marathon training plan.
+Her goal is to finish under 4 hours and 48 minutes at a mile pace under 11 minutes.
+The tools you can use:
+{tools}
+Consider her average distance, average moving time, maximum distance, maximum moving distance, number of times she's run, biked, walked, swam, or done weight training and the frequency: {pd_output}
+Use that data to shape her cross-training in her marathon training plan.
 Total miles run weekly should eventually be around 45 miles. The number of miles run weekly should gradually increase over time.
 For each week, include the total number of miles to be run for that week.
 The longest run should be around 20 miles and take place 2 weeks before {marathon_date}. 
-The first day should not be a rest day.
-For each running distance you recommend, also suggest easy, medium, or hard pace based on her {avg_moving_time} and {avg_mile}. 
-Make her a marathon training plan to follow, including a list of days between {agent_output_day_answer} and {marathon_date} with a run or workout. 
-There should be {agent_output_day_answer} workouts that get slightly progressively longer so she can be ready for her marathon, but she can't get injured or burned out so there should be no more than one long run (a long run is any run over 10 miles) each week. 
-The plan should also include rest days, sprints, and can include cross-training like{cross_training_options}. After each day, start the next day's workout on a new line and include the date. She should have at least 2 cross-training workouts a week.
-Running calendar plan with days of the month:
+Workouts should be easy right before {marathon_date} 
+For each running distance you recommend, also suggest easy, medium, or hard pace based on her average running times and the number of recommended miles. 
+There should be {agent_output_day_answer} workouts starting with today that get slightly progressively longer so she can be ready for her marathon, but she can't get injured or burned out so there should be no more than one long run (a long run is any run over 10 miles) each week. 
+The plan should also include sprints and cross-training like {cross_training_options}. She likes tennis and biking! After each day, start the next day's workout on a new line and include the date. She should have at least 2 cross-training workouts a week.
+Running calendar plan with the start date, end date (which is the marathon on {marathon_date}), some speed workouts or cross-training with times, and goal times:
+Marathon Day (December 10, 2023):
 """
 
 # Set up a prompt template
@@ -187,37 +187,16 @@ prompt = CustomPromptTemplate(
     tools=tools,
     # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
     # This includes the `intermediate_steps` variable because that is needed
-    input_variables=["agent_output_day_answer", "marathon_date", "avg_mile","avg_distance", "avg_moving_time", "max_distance_ran", "num_runs", "num_walks", "num_rides", "num_elliptical", "num_weight_training", "num_swims", "num_tennis", "cross_training_options", "intermediate_steps"]
+    input_variables=["agent_output_day_answer", "marathon_date", "cross_training_options", "pd_output", "intermediate_steps"]
 )
 class CustomOutputParser(AgentOutputParser):
     def parse(self, llm_output: str) -> Union[AgentAction, AgentFinish]:
         # Check if agent should finish
-        if "Day 1:" in llm_output:
+        if "Marathon Day" in llm_output:
             return AgentFinish(
                 # Return values is generally always a dictionary with a single `output` key
                 # It is not recommended to try anything else at the moment :)
-                return_values={"output": llm_output.split("Final Answer:")[-1].strip()},
-                log=llm_output,
-            )
-        elif "Week 1:" in llm_output:
-            return AgentFinish(
-                # Return values is generally always a dictionary with a single `output` key
-                # It is not recommended to try anything else at the moment :)
-                return_values={"output": llm_output.split("Final Answer:")[-1].strip()},
-                log=llm_output,
-            )
-        elif "Marathon day" in llm_output:
-            return AgentFinish(
-                # Return values is generally always a dictionary with a single `output` key
-                # It is not recommended to try anything else at the moment :)
-                return_values={"output": llm_output.split("Final Answer:")[-1].strip()},
-                log=llm_output,
-            )
-        elif "Taper" in llm_output:
-            return AgentFinish(
-                # Return values is generally always a dictionary with a single `output` key
-                # It is not recommended to try anything else at the moment :)
-                return_values={"output": llm_output.split("Final Answer:")[-1].strip()},
+                return_values={"output": llm_output.split("Marathon Day:")[-1].strip()},
                 log=llm_output,
             )
         # Parse out the action and action input
@@ -237,11 +216,11 @@ tool_names = [tool.name for tool in tools]
 agent = LLMSingleActionAgent(
     llm_chain=llm_chain, 
     output_parser=output_parser,
-    stop=["\nObservation:"], 
+    stop=["\Final Answer:"], 
     allowed_tools=tool_names
 )
 agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
-plan = agent_executor({"agent_output_day_answer":agent_output_day_answer, "marathon_date":marathon_date, "avg_mile" :avg_mile, "avg_distance" :avg_distance, "avg_moving_time": avg_moving_time, "max_distance_ran": max_distance_ran, "num_runs": num_runs, "num_walks": num_walks, "num_rides": num_rides, "num_elliptical": num_elliptical, "num_weight_training": num_weight_training, "num_swims": num_swims, "num_tennis": num_tennis, "cross_training_options": cross_training_options})
+plan = agent_executor({"agent_output_day_answer":agent_output_day_answer, "marathon_date":marathon_date, "cross_training_options": cross_training_options, "pd_output": pd_output})
 
 message = Mail(
     from_email='langchain_sendgrid_marathon_trainer@sf.com',
