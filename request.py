@@ -31,7 +31,7 @@ activities = pd.json_normalize(my_dataset)
 cols = ['name', 'type', 'distance', 'moving_time', 'total_elevation_gain', 'start_date']
 activities = activities[cols]
 activities = activities[activities["start_date"].str.contains("2021") == False] #remove items from 2021, only include workouts from 2022 and 2023
-activities.to_csv('activities.csv', index=False)
+activities.to_csv('data_files/activities.csv', index=False)
 
 # loop through activities data frame to get number of activities of each type
 num_runs = len(activities.loc[activities['type'] == 'Run'])
