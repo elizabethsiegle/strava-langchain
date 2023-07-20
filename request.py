@@ -65,6 +65,8 @@ def get_avg_mile_time(df):
     for a,b in zip(df.distance, df.moving_time):
         avg_miles.append((b/a)/60)
     return sum(avg_miles) / len(avg_miles)
+
+
 # search = SerpAPIWrapper(serpapi_api_key=config.get('SERPAPI_API_KEY'))
 # search_tool = Tool(
 #     name="Search",
@@ -145,8 +147,7 @@ tools = [
         name = "rows in csv",
         func = lambda df: num_rows_in_dataframe(df),
         description="use to get the number of rows in csv file to calculate averages from running data"
-    ) #,
-    #search_tool
+    )
 ]
 
 st.title('Personal Marathon Training plan generator')
@@ -179,19 +180,19 @@ with st.form('my_form'):
         activities.to_csv('data_files/activities.csv', index=False)
 
         # loop through activities data frame to get number of activities of each type
-        num_runs = len(activities.loc[activities['type'] == 'Run'])
-        num_walks = len(activities.loc[(activities['type'] == 'Walk') & (activities['total_elevation_gain'] > 90)])
-        num_rides = len(activities.loc[activities['type'] == 'Ride'])
-        num_elliptical = len(activities.loc[activities['type'] == 'Elliptical'])
-        num_weight_training = len(activities.loc[activities['type'] == 'WeightTraining'])
-        num_swims = 0
-        num_tennis = 0
-        for i in activities['name'].values:
-            if 'swim' in i.lower():
-                num_swims +=1
-            if 'tennis' in i.lower():
-                num_tennis +=1
-        cross_training_options = activities['type'].unique()
+        # num_runs = len(activities.loc[activities['type'] == 'Run'])
+        # num_walks = len(activities.loc[(activities['type'] == 'Walk') & (activities['total_elevation_gain'] > 90)])
+        # num_rides = len(activities.loc[activities['type'] == 'Ride'])
+        # num_elliptical = len(activities.loc[activities['type'] == 'Elliptical'])
+        # num_weight_training = len(activities.loc[activities['type'] == 'WeightTraining'])
+        # num_swims = 0
+        # num_tennis = 0
+        # for i in activities['name'].values:
+        #     if 'swim' in i.lower():
+        #         num_swims +=1
+        #     if 'tennis' in i.lower():
+        #         num_tennis +=1
+        # cross_training_options = activities['type'].unique()
         # make CSV of runs
         runs = activities.loc[activities['type'] == 'Run']
         runs.to_csv('data_files/runs.csv', index=False) #index=False writes out weird unnamed index column in pandas df
@@ -219,47 +220,44 @@ with st.form('my_form'):
         print('avg_mile', avg_mile)
 
 
-        llm = OpenAI(temperature=0)
+        llm = OpenAI(temperature=0, max_tokens=4097)
+        print(llm)
         pd_agent = create_pandas_dataframe_agent(OpenAI(temperature=0), data_df, verbose=True) #csv agent?
         # csv agent can be used to load data from CSV files and perform queries, while the Pandas Agent can be used to load data from Pandas data frames and process user queries. Agents can be chained together to build more complex applications.
 
         pd_output = pd_agent.run("Calculate avg distance, avg moving time, max moving time, max distance")
     
-        coach_template = """
-        You are a marathon trainer. 
-        Use {pd_output} to customize a marathon training plan.
-        Weekly mileage should eventually be 45 miles a week. Here is context about your runner:
-        User: training start date: {training_start_date}, marathon date: {marathon_date}
-        AI: {plan}
+        coach_template = """training_start_date: {training_start_date}, marathon_date: {marathon_date}, pd_output: {pd_output},\nplan: {plan}
         """
 
         example_prompt = PromptTemplate(input_variables=["marathon_date", "training_start_date", "pd_output", "plan"], template=coach_template)
 
         prefix = """
+        You are a marathon trainer. Your task is to personalize the following example marathon training plans according to your student and their previous workouts.
         The following are example marathon training plans based on Strava data with an AI
         assistant. The plans slowly increase mileage each week, slowly increase the weekly long run, and include a weekly long run. Some days have runs, other days have cross-training.
         The longest long run is around 18 miles.
-        Here are some examples: 
+        These examples are for you to modify according to the student and their workout data: 
         """
         suffix = """
-        User: {training_start_date}
-        User: {marathon_date}
-        AI: """
+        training_start_date: {training_start_date}, marathon_date: {marathon_date}, pd_output: {pd_output}
+        """
         few_shot_prompt_template = FewShotPromptTemplate(
             examples=stapp.examples, 
             example_prompt=example_prompt, 
             prefix=prefix,
             suffix=suffix, 
-            input_variables=["marathon_date", "training_start_date"]
+            input_variables=["marathon_date", "training_start_date", "pd_output"]
         )
         output_parser = CustomOutputParser()
-        # LLM chain consisting of the LLM and a prompt
+       
+        #LLM chain consisting of the LLM and a prompt
         llm_chain = LLMChain(llm=llm, prompt=few_shot_prompt_template)
         tool_names = [tool.name for tool in tools]
         agent = LLMSingleActionAgent(
             llm_chain=llm_chain, 
             output_parser=output_parser,
-            stop=["\Final Answer:"], 
+            stop=["\Marathon Day:"], 
             allowed_tools=tool_names
         )
         agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
