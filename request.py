@@ -3,7 +3,7 @@ import urllib3
 import stapp #file
 from dotenv import dotenv_values
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) #I forget why I added this
-config = dotenv_values(".env") #pip install chromadb, tabulate google-search-results reportlab openai
+config = dotenv_values(".env") #pip install chromadb tabulate google-search-results reportlab openai
 
 #datetime calculator
 import pandas as pd #dataframe
@@ -35,7 +35,7 @@ from reportlab.lib.pagesizes import letter
 activities_url = "https://www.strava.com/api/v3/athlete/activities"
 os.environ["OPENAI_API_KEY"] = config.get('OPENAI_API_KEY')
 os.environ["SENDGRID_API_KEY"] = config.get('SENDGRID_API_KEY')
-llm = ChatOpenAI(model_name='gpt-4-32k', temperature=0)
+llm = ChatOpenAI(model_name='gpt-4-32k', temperature=0.2)
 llm_math_chain = LLMMathChain.from_llm(llm=llm, verbose=True)
 
 def convert_to_miles(num):
@@ -52,13 +52,6 @@ def calc_days_btwn(training_start_date, marathon_date): #thinks d2 (marathon_dat
 #number of workouts in Strava data
 def num_rows_in_dataframe(df):
     return len(df.index)
-    
-#avg mile time in Strava data
-def get_avg_mile_time(df):
-    avg_miles = []
-    for a,b in zip(df.distance, df.moving_time):
-        avg_miles.append((b/a)/60)
-    return sum(avg_miles) / len(avg_miles)
 
 email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
 def validate_email(email):
@@ -160,8 +153,6 @@ with st.form('my_form'):
             my_dataset += requests.get(activities_url, headers=header, params=params).json() #add to dataset, need strava token in .env to be updated else get dict error
         
             activities = pd.json_normalize(my_dataset)
-            # print(activities.columns) # list all columns in the table
-            # print(activities.shape) #dimensions of the table.
 
             #Create new dataframe with specific columns #max_time
             cols = ['name', 'type', 'distance', 'moving_time', 'total_elevation_gain', 'start_date']
@@ -169,21 +160,6 @@ with st.form('my_form'):
             activities = activities[activities["start_date"].str.contains("2021") == False] #remove items from 2021, only include workouts from 2022 and 2023
             activities.to_csv('data_files/activities.csv', index=False)
 
-            # loop through activities data frame to get number of activities of each type
-            # num_runs = len(activities.loc[activities['type'] == 'Run'])
-            # num_walks = len(activities.loc[(activities['type'] == 'Walk') & (activities['total_elevation_gain'] > 90)])
-            # num_rides = len(activities.loc[activities['type'] == 'Ride'])
-            # num_elliptical = len(activities.loc[activities['type'] == 'Elliptical'])
-            # num_weight_training = len(activities.loc[activities['type'] == 'WeightTraining'])
-            # num_swims = 0
-            # num_tennis = 0
-            # for i in activities['name'].values:
-            #     if 'swim' in i.lower():
-            #         num_swims +=1
-            #     if 'tennis' in i.lower():
-            #         num_tennis +=1
-            # cross_training_options = activities['type'].unique()
-            # make CSV of runs
             runs = activities.loc[activities['type'] == 'Run']
             runs.to_csv('data_files/runs.csv', index=False) #index=False writes out weird unnamed index column in pandas df
 
@@ -217,11 +193,11 @@ with st.form('my_form'):
                 )
             ]
 
-            pd_agent_run = create_pandas_dataframe_agent(OpenAI(temperature=0), data_run_df, verbose=True) #csv agent?
-            pd_agent_activity = create_pandas_dataframe_agent(OpenAI(temperature=0), data_activity_df, verbose=True)
+            pd_agent_run = create_pandas_dataframe_agent(OpenAI(temperature=0.3), data_run_df, verbose=True) #csv agent?
+            pd_agent_activity = create_pandas_dataframe_agent(OpenAI(temperature=0.3), data_activity_df, verbose=True)
             # csv agent can be used to load data from CSV files and perform queries, while the Pandas Agent can be used to load data from Pandas data frames and process user queries. Agents can be chained together to build more complex applications.
             agent = initialize_agent(tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
-            num_workouts = agent.run(f'Calculate the number of days between these two dates: {marathon_date} and {training_start_date}. You have access to tools')
+            num_workouts = agent.run(f'Calculate the number of days between these two dates representing the number of workouts in the plan: {marathon_date} and {training_start_date}. You have access to tools')
             pd_run_output = pd_agent_run.run("Calculate average distance and maximum distance in miles and average moving time and maximum moving time in minutes. Additionally, calculate any other running statistics from the data you think would be helpful to consider in marathon training.")
 
             coach_template = """training_start_date:{training_start_date}, marathon_date:{marathon_date}, pd_run_output: {pd_run_output}, num_workouts: {num_workouts}, plan: {plan}
@@ -231,7 +207,7 @@ with st.form('my_form'):
 
             prefix = """
             You are a marathon trainer tasked with crafting one personalized marathon training plan containing  according to your student's previous runs and activities.
-            For each week you should recommend 2 cross-training activities and no more than one run greater than 14 miles.
+            For each week you should recommend 2 cross-training activities and no more than one run greater than 14 miles per week. The longest run you recommend should be 20 miles around 2 weeks before {marathon_date}.
             There should be {num_workouts} workouts for {num_workouts} days, and there should be easy workouts and rest days in the week leading up to {marathon_date}.
             Slightly modify the following example marathon training plans based on your student and the days beginning on {training_start_date} up until {marathon_date} to create one personalized training plan with each workout on a new line: 
             """
