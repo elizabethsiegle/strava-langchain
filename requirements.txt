@@ -3,7 +3,6 @@ numpy==1.25.0
 pandas==2.0.3
 python-dotenv==1.0.0
 PyYAML==6.0
-PyYAML==6.0.1
 reportlab==4.0.4
 Requests==2.31.0
 sendgrid==6.10.0
