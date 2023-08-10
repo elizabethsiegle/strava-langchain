@@ -1,4 +1,3 @@
-# TODO: check how to input data/stats/facts into LLM without passing vars to template as input vars
 import requests
 import urllib3
 import stapp #file
@@ -6,21 +5,17 @@ from dotenv import dotenv_values
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) #I forget why I added this
 config = dotenv_values(".env") #pip install chromadb, tabulate google-search-results reportlab openai
 
+#datetime calculator
 import pandas as pd #dataframe
-import numpy as np
 import re
-import datetime as dt #datetime for formatting iso 8601 date
-from datetime import date #convert seconds to mins, hours, etc
+from datetime import date, datetime
 
 import streamlit as st
-from langchain import  LLMChain #SerpAPIWrapper,
-from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, AgentOutputParser, create_pandas_dataframe_agent
-#from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from langchain import  LLMChain, LLMMathChain
+from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, AgentOutputParser, create_pandas_dataframe_agent, initialize_agent, AgentType
+from langchain.agents.self_ask_with_search.output_parser import SelfAskOutputParser
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
-#from langchain.document_loaders import TextLoader
-#from langchain.embeddings import HuggingFaceEmbeddings
-#from langchain.indexes import VectorstoreIndexCreator
 from langchain.llms import OpenAI #, GPT4All
 from langchain.prompts import BaseChatPromptTemplate
 from langchain.prompts.few_shot import FewShotPromptTemplate
@@ -38,27 +33,26 @@ from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import letter
 
 activities_url = "https://www.strava.com/api/v3/athlete/activities"
-
+os.environ["OPENAI_API_KEY"] = config.get('OPENAI_API_KEY')
+os.environ["SENDGRID_API_KEY"] = config.get('SENDGRID_API_KEY')
+llm = ChatOpenAI(model_name='gpt-4-32k', temperature=0)
+llm_math_chain = LLMMathChain.from_llm(llm=llm, verbose=True)
 
 def convert_to_miles(num):
     return ((num/m_conv_factor)*1000)/1000.0
-def todays_date():
-    todaysDate = dt.datetime.now().strftime('%Y, %m, %d')
-    return todaysDate
 
-def calc_days_till_marathon(): 
-    todayDate = todays_date()
-    date_object = dt.datetime.strptime(todayDate, '%Y, %m, %d').date()
-    d1 = date(2023, 12, 10)
-    delta = d1 - date_object
-    return delta
+def calc_days_btwn(training_start_date, marathon_date): #thinks d2 (marathon_date) is a string
+    training_start_date = training_start_date.split(',')[1].strip()
+    training_start_date = datetime.strptime(training_start_date, '%Y-%m-%d') #.date()
+    training_start_date = datetime.date(training_start_date)
 
-def calc_weeks_till_marathon():
-    daysToM = calc_days_till_marathon()
-    return daysToM/7
+    delta = marathon_date - training_start_date
+    return delta.days-1
+
 #number of workouts in Strava data
 def num_rows_in_dataframe(df):
     return len(df.index)
+    
 #avg mile time in Strava data
 def get_avg_mile_time(df):
     avg_miles = []
@@ -66,13 +60,14 @@ def get_avg_mile_time(df):
         avg_miles.append((b/a)/60)
     return sum(avg_miles) / len(avg_miles)
 
+email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+def validate_email(email):
+    # pass the regular expression and the string into the fullmatch() method
+    if(re.fullmatch(email_regex, email)):
+        return True
+    else:
+        return False
 
-# search = SerpAPIWrapper(serpapi_api_key=config.get('SERPAPI_API_KEY'))
-# search_tool = Tool(
-#     name="Search",
-#     func=search.run,
-#     description="useful for when you need to answer questions about current events",
-# )
 # Set up a prompt template
 class CustomPromptTemplate(BaseChatPromptTemplate):
     template: str
@@ -94,7 +89,7 @@ class CustomPromptTemplate(BaseChatPromptTemplate):
         # Create a list of tool names for the tools provided
         kwargs["tool_names"] = ", ".join([tool.name for tool in self.tools])
         formatted = self.template.format(**kwargs)
-        return [HumanMessage(content=formatted)]
+        return [HumanMessage(content=formatted)] 
     
 class CustomOutputParser(AgentOutputParser):
     def parse(self, llm_output: str) -> Union[AgentAction, AgentFinish]:
@@ -125,186 +120,188 @@ class CustomOutputParser(AgentOutputParser):
                 if not response.startswith("Could not parse LLM output: `"):
                     raise e
                 response = response.removeprefix("Could not parse LLM output: `").removesuffix("`")
-       
-
-tools = [
-      Tool(
-        name = "get today's date",
-        func = lambda x:todays_date(),
-        description="use to get today's date"
-    ),
-    Tool(
-        name = "days to marathon",
-        func = lambda x: calc_days_till_marathon(),
-        description="use to calculate the number of days from today until the marathon"
-    ),
-    Tool(
-        name = "weeks to marathon",
-        func = lambda x:calc_weeks_till_marathon(),
-        description="use to get the number of weeks from today until the marathon"
-    ),
-    Tool(
-        name = "rows in csv",
-        func = lambda df: num_rows_in_dataframe(df),
-        description="use to get the number of rows in csv file to calculate averages from running data"
-    )
-]
 
 st.title('Personal Marathon Training plan generator')
 st.subheader('enter details below')
+today = datetime.now()
+jul_30 = date(today.year, 7, 30)
+dec_31 = date(today.year, 12, 31)
 
 with st.form('my_form'):
     strava_token_input = st.text_input('Strava API token')
     email = st.text_input('Email to send plan to')
-    marathon_date = st.text_input('When is your marathon date?')
-    training_start_date = st.text_input('When do you want to start training?')
+    dates = st.date_input(
+        "Select your training dates for the year: it should be from the first training date to the marathon date",
+        (jul_30, date(today.year, 12, 10)),
+        jul_30,
+        dec_31
+    )
+    st.write('Training date: ', dates[0], "Marathon date: ", dates[1])
+    # calculate days between 2 dates
+    training_start_date = dates[0]
+    marathon_date = dates[1]
     submitted = st.form_submit_button('Submit')
     if submitted:
-        header = {'Authorization': 'Bearer ' + strava_token_input} #config.get('STRAVA_TOKEN')}
-        params = {'per_page': 200, 'page': 1} #max 200 per page, can only do 1 page at a time
-        my_dataset = requests.get(activities_url, headers=header, params=params).json() #activities 1st page
-        page = 0
-        for x in range(1,5): #loop through 4 pages of strava activities
-            page +=1 
-        params = {'per_page': 200, 'page': page}
-        my_dataset += requests.get(activities_url, headers=header, params=params).json() #add to dataset, need strava token in .env to be updated else get dict error
-    
-        activities = pd.json_normalize(my_dataset)
-        # print(activities.columns) # list all columns in the table
-        # print(activities.shape) #dimensions of the table.
+        if not validate_email(email):
+            st.error("invalid email", icon="🚨")
+            st.cache_data()
+        elif training_start_date > marathon_date:
+            st.error("Start date must be earlier than end date", icon="🚨")
+            st.cache_data()
+        try:
+            success = st.success("Thank you for inputting valid dates and emails! Plan is being generated.") #st.write
+            header = {'Authorization': 'Bearer ' + strava_token_input} #config.get('STRAVA_TOKEN')}
+            params = {'per_page': 200, 'page': 1} #max 200 per page, can only do 1 page at a time
+            my_dataset = requests.get(activities_url, headers=header, params=params).json() #activities 1st page
+            page = 0
+            for x in range(1,5): #loop through 4 pages of strava activities
+                page +=1 
+            params = {'per_page': 200, 'page': page}
+            my_dataset += requests.get(activities_url, headers=header, params=params).json() #add to dataset, need strava token in .env to be updated else get dict error
+        
+            activities = pd.json_normalize(my_dataset)
+            # print(activities.columns) # list all columns in the table
+            # print(activities.shape) #dimensions of the table.
 
-        #Create new dataframe with specific columns #max_time
-        cols = ['name', 'type', 'distance', 'moving_time', 'total_elevation_gain', 'start_date']
-        activities = activities[cols]
-        activities = activities[activities["start_date"].str.contains("2021") == False] #remove items from 2021, only include workouts from 2022 and 2023
-        activities.to_csv('data_files/activities.csv', index=False)
+            #Create new dataframe with specific columns #max_time
+            cols = ['name', 'type', 'distance', 'moving_time', 'total_elevation_gain', 'start_date']
+            activities = activities[cols]
+            activities = activities[activities["start_date"].str.contains("2021") == False] #remove items from 2021, only include workouts from 2022 and 2023
+            activities.to_csv('data_files/activities.csv', index=False)
 
-        # loop through activities data frame to get number of activities of each type
-        # num_runs = len(activities.loc[activities['type'] == 'Run'])
-        # num_walks = len(activities.loc[(activities['type'] == 'Walk') & (activities['total_elevation_gain'] > 90)])
-        # num_rides = len(activities.loc[activities['type'] == 'Ride'])
-        # num_elliptical = len(activities.loc[activities['type'] == 'Elliptical'])
-        # num_weight_training = len(activities.loc[activities['type'] == 'WeightTraining'])
-        # num_swims = 0
-        # num_tennis = 0
-        # for i in activities['name'].values:
-        #     if 'swim' in i.lower():
-        #         num_swims +=1
-        #     if 'tennis' in i.lower():
-        #         num_tennis +=1
-        # cross_training_options = activities['type'].unique()
-        # make CSV of runs
-        runs = activities.loc[activities['type'] == 'Run']
-        runs.to_csv('data_files/runs.csv', index=False) #index=False writes out weird unnamed index column in pandas df
+            # loop through activities data frame to get number of activities of each type
+            # num_runs = len(activities.loc[activities['type'] == 'Run'])
+            # num_walks = len(activities.loc[(activities['type'] == 'Walk') & (activities['total_elevation_gain'] > 90)])
+            # num_rides = len(activities.loc[activities['type'] == 'Ride'])
+            # num_elliptical = len(activities.loc[activities['type'] == 'Elliptical'])
+            # num_weight_training = len(activities.loc[activities['type'] == 'WeightTraining'])
+            # num_swims = 0
+            # num_tennis = 0
+            # for i in activities['name'].values:
+            #     if 'swim' in i.lower():
+            #         num_swims +=1
+            #     if 'tennis' in i.lower():
+            #         num_tennis +=1
+            # cross_training_options = activities['type'].unique()
+            # make CSV of runs
+            runs = activities.loc[activities['type'] == 'Run']
+            runs.to_csv('data_files/runs.csv', index=False) #index=False writes out weird unnamed index column in pandas df
 
-        #convert meters to miles
-        data_df = pd.read_csv('data_files/runs.csv')
-        m_conv_factor = 1609
+            #convert meters to miles
+            data_run_df = pd.read_csv('data_files/runs.csv')
+            data_activity_df = pd.read_csv('data_files/activities.csv')
+            m_conv_factor = 1609
 
-        data_df['distance'] = data_df['distance'].map(lambda x: convert_to_miles(x))
-        #convert moving time secs to mins, hours
-        #data_df['moving_time'] = data_df['moving_time'].astype(str).map(lambda x: x[7:]) #slices off 0 days from moving_time
-        data_df.to_csv('data_files/runs.csv')
+            data_run_df['distance'] = data_run_df['distance'].map(lambda x: convert_to_miles(x))
+            data_activity_df['distance'] = data_activity_df['distance'].map(lambda x: convert_to_miles(x))
+            #convert moving time secs to mins, hours
+            data_run_df['moving_time'] = data_run_df['moving_time'].astype(str).map(lambda x: x[7:]) #slices off 0 days from moving_time
+            data_run_df.to_csv('data_files/runs.csv')
+            data_activity_df = pd.read_csv('data_files/activities.csv')
 
-        os.environ["OPENAI_API_KEY"] = config.get('OPENAI_API_KEY')
-        # number of days for workouts
-        avg_distance = data_df['distance'].mean()
-        avg_moving_time = data_df['moving_time'].mean()
-        max_distance_ran = data_df['distance'].max()
-        avg_miles = []
-        for a,b in zip(data_df.distance, data_df.moving_time):
-            avg_miles.append((b/a)/60)
-            avg_mile= sum(avg_miles) / len(avg_miles)
-        print('avg_distance ', avg_distance)
-        print('avg_moving_time ', avg_moving_time)
-        print('avg_mile', avg_mile)
+            tools = [
+                Tool(
+                    name = "rows in csv",
+                    func = lambda df: num_rows_in_dataframe(df),
+                    description="use to get the number of rows in csv file to calculate averages from running data"
+                ),
+                Tool(
+                    name="Calculator",
+                    func=llm_math_chain.run,
+                    description="useful for when you need to answer questions about math"
+                ),
+                Tool(
+                    name="days_between",
+                    func=lambda day1, day2=marathon_date: calc_days_btwn(day1, day2),
+                    description="useful for when you need to calculate the number of days between two dates of type date, like between the training start date and the marathon date"
+                )
+            ]
 
+            pd_agent_run = create_pandas_dataframe_agent(OpenAI(temperature=0), data_run_df, verbose=True) #csv agent?
+            pd_agent_activity = create_pandas_dataframe_agent(OpenAI(temperature=0), data_activity_df, verbose=True)
+            # csv agent can be used to load data from CSV files and perform queries, while the Pandas Agent can be used to load data from Pandas data frames and process user queries. Agents can be chained together to build more complex applications.
+            agent = initialize_agent(tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
+            num_workouts = agent.run(f'Calculate the number of days between these two dates: {marathon_date} and {training_start_date}. You have access to tools')
+            pd_run_output = pd_agent_run.run("Calculate average distance and maximum distance in miles and average moving time and maximum moving time in minutes. Additionally, calculate any other running statistics from the data you think would be helpful to consider in marathon training.")
 
-        llm = OpenAI(temperature=0, max_tokens=4097)
-        print(llm)
-        pd_agent = create_pandas_dataframe_agent(OpenAI(temperature=0), data_df, verbose=True) #csv agent?
-        # csv agent can be used to load data from CSV files and perform queries, while the Pandas Agent can be used to load data from Pandas data frames and process user queries. Agents can be chained together to build more complex applications.
+            coach_template = """training_start_date:{training_start_date}, marathon_date:{marathon_date}, pd_run_output: {pd_run_output}, num_workouts: {num_workouts}, plan: {plan}
+            """
 
-        pd_output = pd_agent.run("Calculate avg distance, avg moving time, max moving time, max distance")
-    
-        coach_template = """training_start_date: {training_start_date}, marathon_date: {marathon_date}, pd_output: {pd_output},\nplan: {plan}
-        """
+            example_prompt = PromptTemplate(input_variables=["training_start_date", "marathon_date", "pd_run_output", "num_workouts", "plan"], template=coach_template)
 
-        example_prompt = PromptTemplate(input_variables=["marathon_date", "training_start_date", "pd_output", "plan"], template=coach_template)
+            prefix = """
+            You are a marathon trainer tasked with crafting one personalized marathon training plan containing  according to your student's previous runs and activities.
+            For each week you should recommend 2 cross-training activities and no more than one run greater than 14 miles.
+            There should be {num_workouts} workouts for {num_workouts} days, and there should be easy workouts and rest days in the week leading up to {marathon_date}.
+            Slightly modify the following example marathon training plans based on your student and the days beginning on {training_start_date} up until {marathon_date} to create one personalized training plan with each workout on a new line: 
+            """
+            suffix = """
+            training_start_date: {training_start_date}, marathon_date: {marathon_date}, pd_run_output: {pd_run_output}, num_workouts: {num_workouts}
+            """
+            few_shot_prompt_template = FewShotPromptTemplate(
+                examples=stapp.examples, 
+                example_prompt=example_prompt, 
+                prefix=prefix,
+                suffix=suffix, 
+                input_variables=["marathon_date", "training_start_date", "pd_run_output", "num_workouts"]
+            )
+            output_parser = CustomOutputParser()
+        
+            #LLM chain consisting of the LLM and a prompt
+            llm_chain = LLMChain(llm=llm, prompt=few_shot_prompt_template)
+            tool_names = [tool.name for tool in tools]
+            agent = LLMSingleActionAgent(
+                llm_chain=llm_chain, 
+                output_parser=output_parser,
+                stop=["\Marathon Day:"], 
+                allowed_tools=tool_names
+            )
+            agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
+            plan = agent_executor({"marathon_date":marathon_date, "training_start_date": training_start_date, "pd_run_output": pd_run_output, "num_workouts": num_workouts})
+            print('plan being print ', plan)
+            plan = plan['output']
+            plan = str(plan).replace('\n','<br />') #each workout on new line
+            message = Mail(
+                from_email='langchain_sendgrid_marathon_trainer@sf.com',
+                to_emails=email,
+                subject='Your AI-generated marathon training plan',
+                html_content='<strong>Good luck at your marathon on %s</strong>!\n\nYour plan is attached.'%(marathon_date))
 
-        prefix = """
-        You are a marathon trainer. Your task is to personalize the following example marathon training plans according to your student and their previous workouts.
-        The following are example marathon training plans based on Strava data with an AI
-        assistant. The plans slowly increase mileage each week, slowly increase the weekly long run, and include a weekly long run. Some days have runs, other days have cross-training.
-        The longest long run is around 18 miles.
-        These examples are for you to modify according to the student and their workout data: 
-        """
-        suffix = """
-        training_start_date: {training_start_date}, marathon_date: {marathon_date}, pd_output: {pd_output}
-        """
-        few_shot_prompt_template = FewShotPromptTemplate(
-            examples=stapp.examples, 
-            example_prompt=example_prompt, 
-            prefix=prefix,
-            suffix=suffix, 
-            input_variables=["marathon_date", "training_start_date", "pd_output"]
-        )
-        output_parser = CustomOutputParser()
-       
-        #LLM chain consisting of the LLM and a prompt
-        llm_chain = LLMChain(llm=llm, prompt=few_shot_prompt_template)
-        tool_names = [tool.name for tool in tools]
-        agent = LLMSingleActionAgent(
-            llm_chain=llm_chain, 
-            output_parser=output_parser,
-            stop=["\Marathon Day:"], 
-            allowed_tools=tool_names
-        )
-        agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
-        plan = agent_executor({"marathon_date":marathon_date, "training_start_date": training_start_date, "pd_output": pd_output})
-       
-        message = Mail(
-            from_email='langchain_sendgrid_marathon_trainer@sf.com',
-            to_emails=email,
-            subject='Your AI-generated marathon training plan',
-            html_content='<strong>Good luck at your marathon on %s</strong>!\n\nYour plan is attached.'%(marathon_date))
+            styleN = getSampleStyleSheet()['Normal']
+            story = []
 
-        styles = getSampleStyleSheet()
-        styleN = styles['Normal']
-        styleH = styles['Heading1']
-        story = []
+            pdf_name = 'plan.pdf'
+            doc = SimpleDocTemplate(
+                pdf_name,
+                pagesize=letter,
+                bottomMargin=.4 * inch,
+                topMargin=.6 * inch,
+                rightMargin=.8 * inch,
+                leftMargin=.8 * inch)
+            P = Paragraph(plan, styleN)
+            story.append(P)
 
-        pdf_name = 'plan.pdf'
-        doc = SimpleDocTemplate(
-            pdf_name,
-            pagesize=letter,
-            bottomMargin=.4 * inch,
-            topMargin=.6 * inch,
-            rightMargin=.8 * inch,
-            leftMargin=.8 * inch)
-        P = Paragraph(plan['output'], styleN)
-        story.append(P)
+            doc.build(
+                story,
+            )
+            with open(pdf_name, 'rb') as f:
+                data = f.read()
+                f.close()
+            encoded_file = base64.b64encode(data).decode()
 
-        doc.build(
-            story,
-        )
-        with open(pdf_name, 'rb') as f:
-            data = f.read()
-            f.close()
-        encoded_file = base64.b64encode(data).decode()
-
-        attachedFile = Attachment(
-            FileContent(encoded_file),
-            FileName('attachment.pdf'),
-            FileType('application/pdf'),
-            Disposition('attachment')
-        )
-        message.attachment = attachedFile
-        os.environ["SENDGRID_API_KEY"] = config.get('SENDGRID_API_KEY')
-        sg = SendGridAPIClient()
-        response = sg.send(message)
-        code, body, headers = response.status_code, response.body, response.headers
-        print(f"Response Code: {code} ")
-        print(f"Response Body: {body} ")
-        print(f"Response Headers: {headers} ")
-        print("Message Sent!")
+            attachedFile = Attachment(
+                FileContent(encoded_file),
+                FileName('personal_ai_generated_marathon_training_plan.pdf'),
+                FileType('application/pdf'),
+                Disposition('attachment')
+            )
+            message.attachment = attachedFile
+            sg = SendGridAPIClient()
+            response = sg.send(message)
+            if response.status_code == 202:
+                st.success("Email sent! Check your email for your personal training plan")
+                print(f"Response Code: {response.status_code} \n Message sent!")
+            else:
+                st.warning("Email not sent--check email")
+        except TypeError:
+            st.error("Check Strava Token")
