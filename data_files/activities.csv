@@ -1,4 +1,62 @@
 name,type,distance,moving_time,total_elevation_gain,start_date
+Lunch Walk,Walk,953.0,168,6.6,2023-08-10T19:06:51Z
+Evening Tennis,Workout,0.0,5136,0.0,2023-08-10T02:35:32Z
+Late to tennis run ,Run,1975.4,744,5.0,2023-08-10T02:18:12Z
+Lunch Walk,Walk,952.6,673,2.8,2023-08-09T18:24:49Z
+Morning Walk,Walk,1020.5,762,25.0,2023-08-09T17:18:53Z
+Evening Ride,Ride,3655.8,920,11.6,2023-08-09T03:16:58Z
+Afternoon Walk,Walk,1813.1,842,40.4,2023-08-09T00:44:48Z
+Morning Ride,Ride,1774.9,409,20.6,2023-08-08T15:14:18Z
+Evening Run pickup food ,Run,6051.7,2372,126.6,2023-08-08T02:13:35Z
+Afternoon Walk,Walk,1693.0,1208,20.4,2023-08-07T23:10:13Z
+Post-flight ride for food and caffeine ,Ride,2515.0,678,25.2,2023-08-07T21:28:56Z
+Afternoon Walk,Walk,430.6,380,13.6,2023-08-07T21:19:38Z
+Evening Walk,Walk,1276.7,392,2.2,2023-08-07T02:59:51Z
+Evening Walk,Walk,1903.7,592,45.2,2023-08-07T01:24:43Z
+Afternoon Ride,Ride,6563.7,1456,85.6,2023-08-06T21:09:42Z
+Morning Tennis,Workout,0.0,12019,0.0,2023-08-06T17:38:37Z
+Morning Ride,Ride,6070.9,1425,66.6,2023-08-06T16:58:13Z
+Ride from outside LLMs rofl ,EBikeRide,3349.4,801,38.8,2023-08-06T04:19:10Z
+Lunch Ride,EBikeRide,3317.9,670,8.2,2023-08-05T18:18:45Z
+Night Ride,Ride,6535.5,1810,86.4,2023-08-05T05:50:02Z
+Tennis to tennis party ride ,Ride,1148.8,289,14.8,2023-08-05T01:14:37Z
+Afternoon Tennis,Workout,0.0,4008,0.0,2023-08-04T23:58:22Z
+Afternoon Ride,Ride,5977.3,1467,68.0,2023-08-04T23:24:21Z
+Afternoon Run,Run,973.3,371,4.2,2023-08-04T22:18:20Z
+Evening Run,Run,2549.3,952,8.0,2023-08-04T01:21:40Z
+Afternoon Walk,Walk,1646.7,600,54.2,2023-08-04T00:30:02Z
+Afternoon Walk,Walk,1361.1,181,0.0,2023-08-03T20:08:34Z
+Morning Walk,Walk,1948.9,1308,0.0,2023-08-03T16:35:29Z
+Evening Tennis,Workout,0.0,6779,0.0,2023-08-03T01:24:45Z
+Lunch Run,Run,8674.7,3112,78.4,2023-08-02T19:39:02Z
+Night Ride,Ride,6549.5,1511,85.2,2023-08-02T04:07:31Z
+Afternoon Ride,Ride,5964.6,1425,81.6,2023-08-02T00:15:45Z
+Afternoon Walk,Walk,2286.9,1632,74.8,2023-08-01T22:15:41Z
+Night Ride,Ride,6339.9,1520,85.4,2023-08-01T04:07:31Z
+Late to tennis hit all the reds ride ,Ride,5828.8,1208,77.2,2023-07-31T22:37:54Z
+Sunset beach run ,Run,12946.3,5246,138.2,2023-07-31T02:13:02Z
+Taylor concert: watch thought I was walking,Walk,8915.3,6954,45.8,2023-07-30T03:36:21Z
+Evening Weight Training,WeightTraining,0.0,951,0.0,2023-07-29T03:43:41Z
+Evening Elliptical,Elliptical,0.0,1251,0.0,2023-07-29T03:22:20Z
+Lunch Walk,Walk,1263.3,82,0.0,2023-07-28T18:48:54Z
+Beach Run for work blog gif content ,Run,11050.1,4311,98.4,2023-07-28T02:10:05Z
+Afternoon Walk,Walk,1847.4,1468,90.0,2023-07-28T00:50:07Z
+Afternoon Walk,Walk,4604.7,4930,0.0,2023-07-27T21:23:44Z
+Night Walk,Walk,812.9,666,6.8,2023-07-27T04:29:05Z
+Evening Walk,Walk,2590.1,1772,12.0,2023-07-27T01:12:51Z
+Craig and Lizzie hack night debrief ride,EBikeRide,2813.3,733,95.6,2023-07-26T05:14:05Z
+Afternoon Ride to replit hack night ,EBikeRide,1848.5,415,3.8,2023-07-25T23:58:20Z
+Morning Walk,Walk,2297.5,979,6.0,2023-07-24T17:30:18Z
+Morning Walk,Walk,1969.8,610,70.0,2023-07-23T15:33:20Z
+Alexi Pappas 10k shubhaaa,Run,9841.3,3170,15.4,2023-07-23T14:01:24Z
+Morning Walk,Walk,1832.5,713,0.0,2023-07-23T13:33:13Z
+Afternoon Ride,Ride,5526.6,1586,91.4,2023-07-23T00:29:51Z
+Run to Sf race expo with Shubha! ,Run,3441.5,1271,19.6,2023-07-22T20:18:05Z
+Morning Walk for yimby walk,Walk,5188.2,3834,48.0,2023-07-22T17:25:12Z
+Lizzie and Martin rescue our cruise car night walk,Walk,1940.7,700,12.6,2023-07-22T05:55:41Z
+USWNT to Langchain party ty Martin ,EBikeRide,2989.2,625,14.6,2023-07-22T03:27:41Z
+Lunch Walk,Walk,1035.3,126,5.8,2023-07-21T18:39:07Z
+Afternoon Ride,Ride,1594.6,427,8.4,2023-07-21T00:37:08Z
 Morning Walk,Walk,1935.2,1388,0.0,2023-07-20T16:30:36Z
 Evening Tennis,Workout,0.0,5262,0.0,2023-07-20T02:35:37Z
 Evening Walk,Walk,1967.1,1307,5.8,2023-07-20T02:11:51Z
@@ -141,64 +199,64 @@ Afternoon Weight Training,WeightTraining,0.0,844,0.0,2023-05-29T22:23:09Z
 Afternoon Run,Run,1444.7,591,38.0,2023-05-29T21:09:43Z
 Lunch Run,Run,1339.1,455,0.0,2023-05-29T18:53:11Z
 Night Ride,Ride,3932.8,1196,86.0,2023-05-29T04:09:08Z
-Afternoon Ride,Ride,4113.1,1027,46.4,2023-05-29T00:45:33Z
-Afternoon Ride,Ride,6418.9,1418,84.2,2023-05-28T21:15:20Z
-Afternoon Pickleball,Workout,0.0,2450,0.0,2023-05-28T20:20:30Z
-Lunch Pickleball,Workout,0.0,1249,0.0,2023-05-28T19:56:14Z
-Lunch Pickleball,Workout,0.0,1148,0.0,2023-05-28T19:15:13Z
-Morning Pickleball,Workout,0.0,286,0.0,2023-05-28T15:56:28Z
-Morning Ride,Ride,6214.4,1312,66.4,2023-05-28T15:25:22Z
-Afternoon Ride,Ride,3981.4,1114,87.8,2023-05-27T23:14:05Z
-Lunch Ride,Ride,2727.1,700,12.4,2023-05-27T19:26:13Z
-Evening Tennis,Workout,0.0,8723,0.0,2023-05-27T01:35:04Z
-Evening Run,Run,1861.9,575,0.0,2023-05-27T01:18:57Z
-Lunch Walk,Walk,3671.4,2940,120.0,2023-05-26T19:42:56Z
-Lunch Walk,Walk,3435.7,2660,15.2,2023-05-26T18:01:20Z
-Night Ride,Ride,6468.5,1540,91.2,2023-05-25T04:13:17Z
-Evening Tennis,Workout,0.0,866,0.0,2023-05-25T02:18:14Z
-Afternoon Ride,Ride,6223.4,1567,65.8,2023-05-24T22:26:38Z
-Evening Ride,Ride,6467.5,1659,91.6,2023-05-24T01:08:44Z
-Afternoon Tennis,Workout,0.0,539,0.0,2023-05-24T00:44:18Z
-Afternoon Ride,Ride,6132.8,1431,67.2,2023-05-23T20:45:00Z
-Evening Tennis,Workout,0.0,5951,0.0,2023-05-23T03:24:18Z
-Lunch Walk,Walk,1892.5,1447,23.0,2023-05-22T18:11:10Z
-Evening Tennis,Workout,0.0,5027,0.0,2023-05-22T01:43:06Z
-Afternoon Run,Run,2887.9,1202,84.4,2023-05-21T23:01:50Z
-Bay to breakers (modified) ,Run,11425.5,4122,108.6,2023-05-21T16:00:30Z
-Lunch Weight Training,WeightTraining,0.0,297,0.0,2023-05-20T18:01:25Z
-Morning Elliptical,Elliptical,0.0,1801,0.0,2023-05-20T17:28:02Z
-Morning Walk,Walk,1143.9,49,0.0,2023-05-20T15:59:20Z
-Afternoon Walk,Walk,1509.7,579,40.6,2023-05-19T22:55:24Z
-Evening Tennis,Workout,0.0,3866,0.0,2023-05-19T02:57:18Z
-Evening Ride,Ride,5586.6,1539,111.4,2023-05-19T01:03:28Z
-BIKE BUS X BIKE TO WHEREVER WORK DAY,Ride,7774.5,2254,33.0,2023-05-18T14:46:43Z
-Morning Ride,Ride,6171.5,1478,98.2,2023-05-18T14:11:45Z
-Evening Run,Run,1387.3,581,77.2,2023-05-18T03:28:42Z
-Afternoon Ride,Ride,5923.3,1295,61.2,2023-05-17T00:52:45Z
-Afternoon Ride,Ride,6078.2,1436,66.0,2023-05-16T20:43:12Z
-Lunch Ride,Ride,2873.8,715,53.8,2023-05-16T18:19:43Z
-Morning Tennis,Workout,0.0,3588,0.0,2023-05-16T17:10:36Z
-Morning Ride,Ride,2599.3,749,47.4,2023-05-16T16:53:03Z
-Afternoon Walk,Walk,1775.5,1441,94.0,2023-05-15T23:04:47Z
-Afternoon Tennis,Workout,0.0,5059,0.0,2023-05-15T21:22:53Z
-Night HIIT,Workout,0.0,2268,0.0,2023-05-15T05:13:17Z
-Morning Walk,Walk,2208.6,1677,22.6,2023-05-14T17:43:54Z
-Evening Walk,Walk,1272.8,760,6.0,2023-05-14T02:26:56Z
-Afternoon Walk,Walk,1138.6,2,0.0,2023-05-13T23:03:47Z
-KEVIN MEETS JAKE X KEVIN’S LAST EAST BAY BIKE PARTY,Ride,24656.9,7753,91.4,2023-05-13T03:21:22Z
-Evening Ride,Ride,2003.4,576,0.0,2023-05-13T01:56:35Z
-bike pickup x errands,Ride,6781.9,1893,140.2,2023-05-12T20:03:03Z
-Morning Walk,Walk,1050.2,150,0.0,2023-05-12T17:39:20Z
-Night Walk,Walk,1174.9,1122,84.8,2023-05-12T04:46:38Z
-Morning Walk,Walk,3670.6,2554,49.0,2023-05-11T17:51:33Z
-Evening Ride,Ride,3797.3,742,17.2,2023-05-11T02:22:26Z
-Evening Pickleball,Workout,0.0,3577,0.0,2023-05-11T01:11:13Z
-Afternoon Ride,Ride,6302.5,1645,77.8,2023-05-10T22:19:54Z
-Night Walk,Walk,1773.9,1409,67.0,2023-05-10T05:27:59Z
-Evening Walk,Walk,1843.2,1212,36.2,2023-05-10T02:38:45Z
-Afternoon Ride,Ride,6369.4,1634,91.8,2023-05-10T00:39:13Z
-Afternoon Ride,Ride,6215.1,1624,83.2,2023-05-09T22:22:18Z
-Evening Walk,Walk,907.9,1,0.0,2023-05-09T01:07:29Z
+Morning Ride,Ride,15729.7,3774,135.5,2022-09-30T17:09:32Z
+Evening Ride,Ride,2382.6,809,39.2,2022-09-30T01:04:45Z
+Afternoon Ride,Ride,3164.9,759,12.9,2022-09-29T20:37:09Z
+Ride to lunch + grocery shop with Diane my love,Ride,2432.1,656,0.0,2022-09-29T18:37:48Z
+Morning Ride,Ride,2705.5,579,0.0,2022-09-29T17:11:41Z
+8.5 dubs with warmup ,Workout,0.0,9667,0.0,2022-09-29T01:17:51Z
+Afternoon Ride,Ride,2781.2,981,53.8,2022-09-28T23:57:40Z
+Morning Ride,Ride,3772.1,1143,0.0,2022-09-28T17:04:45Z
+Quick dubs practice ,Workout,0.0,4029,0.0,2022-09-28T00:55:09Z
+Cycling is making me weak 😠😤,Run,5619.8,2186,81.4,2022-09-26T00:09:42Z
+Mixed dubs Sarah in town ,Workout,0.0,3464,0.0,2022-09-24T18:09:55Z
+Long way home ish ride into Sam ,Ride,8692.6,2174,65.7,2022-09-22T23:52:05Z
+Pre-matt hq ,Ride,28398.6,6209,178.4,2022-09-22T15:16:39Z
+9.5 dubs lfg 3 sets vs Olympic club,Workout,0.0,8950,0.0,2022-09-20T01:36:11Z
+Post-brunch ride ,Ride,5473.3,1299,45.8,2022-09-18T21:36:46Z
+Bike 2 cole valley brunch ,Ride,5894.4,1619,80.9,2022-09-18T18:58:38Z
+8.5 dubs ,Workout,0.0,6532,0.0,2022-09-17T21:03:38Z
+Ride for yes on j prop ad jfk,Ride,35836.6,9109,243.0,2022-09-16T14:47:13Z
+Sightsee x shop x couldn’t find boba in mall ATL,Run,12193.3,4911,133.6,2022-09-14T22:05:48Z
+Pre-refactr/great highway + devil's teeth,Ride,30216.9,6866,207.7,2022-09-12T14:26:40Z
+Kristine singles🎾 finally,Workout,0.0,4403,0.0,2022-09-12T01:39:22Z
+9.5 dubs ,Workout,0.0,5908,0.0,2022-09-10T02:12:46Z
+Tennis Warmup ,Workout,0.0,2341,0.0,2022-09-10T01:15:20Z
+Bike bus + telescope coffee! ,Ride,7457.9,2776,69.1,2022-09-09T14:50:54Z
+Morning Ride,Ride,10528.2,2494,100.3,2022-09-09T13:47:34Z
+ICG Ride,Ride,0.0,1657,0.0,2022-09-06T23:28:56Z
+Acai bowl walk,Walk,3331.0,2593,10.9,2022-09-04T16:04:18Z
+Pennapps break meet Kennedy ,Walk,6370.9,4961,33.6,2022-09-03T21:52:10Z
+Night ride from post-meetup Kimberly Thai dinner,Ride,4328.8,1312,14.3,2022-09-01T02:21:08Z
+Ride back to hotel for 1:1,Ride,3181.4,763,14.3,2022-08-30T19:00:55Z
+"1 walk, 4 nyc bookstores ",Walk,7761.1,5439,8.7,2022-08-30T16:16:37Z
+Need to time red/green lights better ,Ride,13742.2,3630,95.2,2022-08-28T22:54:27Z
+Hackcon Wellness center ride,Ride,6301.8,1715,78.9,2022-08-27T13:11:20Z
+Upper Hudson River walk night ride ,Ride,16862.4,4306,55.6,2022-08-26T02:27:37Z
+Run with Shubha to blue barn ,Run,8074.1,3776,29.6,2022-08-23T01:24:22Z
+Brian 3 sets 🎾🎾,Workout,0.0,8417,0.0,2022-08-22T00:08:20Z
+Walk from GGP stop in Alamo square bc elise ,Walk,5266.5,3969,113.1,2022-08-21T20:50:10Z
+New team tennis social dubs ,Workout,0.0,9380,0.0,2022-08-21T17:18:47Z
+Walk to GGP ,Walk,6577.6,4981,104.9,2022-08-21T15:40:00Z
+Run to books Inc ,Run,6468.8,2661,109.0,2022-08-21T00:01:21Z
+First hawk hill run! ,Run,27388.5,12171,344.1,2022-08-15T20:42:04Z
+"Post-dim sum, pre-pageant lands end ",Run,18777.4,7836,287.1,2022-08-13T20:26:58Z
+Mixed dubs,Workout,0.0,7136,0.0,2022-08-13T01:12:16Z
+Bball experience kc ,Workout,0.0,1760,0.0,2022-08-11T18:20:36Z
+Quick KC sightseeing ,Run,6577.1,2356,91.4,2022-08-10T21:05:47Z
+Walk for coffee + museum ,Walk,4332.9,3294,24.1,2022-08-10T18:28:00Z
+KCDC day 1,Ride,0.0,732,0.0,2022-08-09T00:45:25Z
+Sectionals semis singles ,Workout,0.0,6549,0.0,2022-08-07T15:06:29Z
+Jean dubs sectionals day 2 ,Workout,0.0,3881,0.0,2022-08-07T01:02:26Z
+Singles sectionals day 2 ,Workout,0.0,7230,0.0,2022-08-06T19:52:36Z
+Dubs sectionals day 1 ,Workout,0.0,6361,0.0,2022-08-05T23:40:31Z
+Lunchtime singles ,Workout,0.0,4479,0.0,2022-08-01T19:10:15Z
+Walk back from author event Will,Walk,3167.9,2617,95.6,2022-08-01T03:21:24Z
+East bay dubs ,Workout,0.0,7295,0.0,2022-07-31T17:21:43Z
+GGP mixed dubs ,Workout,0.0,7226,0.0,2022-07-30T01:01:03Z
+Walk 2 werk dinner ,Walk,2675.8,2420,15.6,2022-07-27T21:24:31Z
+Walk to coffee and conference,Walk,2681.5,1909,5.6,2022-07-27T12:20:26Z
+Dumplings to cannolis to bike back pipeline,Ride,3356.7,1295,20.6,2022-07-27T03:13:14Z
 "Easy mon-yay, hard borough hills ",Run,5267.7,2274,64.3,2022-07-26T01:12:51Z
 Monterey bay with ami! ,Rowing,0.0,2860,0.0,2022-07-24T20:58:31Z
 Monter-yay,Walk,1481.6,1464,8.0,2022-07-24T18:47:55Z
@@ -341,61 +399,3 @@ Post-game night,Walk,1823.6,1473,89.2,2022-02-22T08:12:15Z
 Daehoooo,Walk,1687.2,1074,24.3,2022-02-22T01:19:43Z
 Bilal says I made a new friend canvassing walk to ina coolbrith x Arsicaultx shop ,Walk,11118.1,8056,215.8,2022-02-21T20:52:19Z
 Brian + me vs Calvin+ Devin dubs lfg ,Workout,0.0,9137,0.0,2022-02-20T18:17:23Z
-Missed the cable car to tennis Omg,Walk,2077.3,1505,0.0,2022-02-20T17:41:34Z
-Ferry to pinball,Walk,2887.7,2015,4.3,2022-02-19T18:58:45Z
-To ferry,Walk,2472.8,1357,2.8,2022-02-19T18:05:43Z
-Friyay ,Walk,5775.6,6461,0.0,2022-02-19T01:33:20Z
-To pinball + kimee post-work tiktok debacle,Walk,5904.4,4225,88.0,2022-02-18T21:43:29Z
-Last walk to bilal hq for a while ,Walk,11109.7,7718,114.7,2022-02-17T22:33:46Z
-Afternoon Activity,Workout,0.0,2778,0.0,2022-02-17T01:46:20Z
-Election night,Walk,635.1,1904,0.0,2022-02-16T06:41:15Z
-Election day,Walk,1076.4,856,0.0,2022-02-16T00:16:31Z
-GOTV SF,Walk,2488.0,1745,5.8,2022-02-15T14:30:34Z
-Today’s stream and new streamingmachine brought to you by Jeff ,Run,15322.2,5813,195.6,2022-02-15T00:28:59Z
-Final Saturday Bilal canvass pre-fam dim sum,Walk,4686.5,4704,78.6,2022-02-12T21:18:12Z
-Afternoon Swim,Swim,795.5,1245,0.0,2022-02-12T01:20:17Z
-Run around to avoid PE class ,Run,5000.1,1708,37.3,2022-02-10T23:25:13Z
-Broke Samwell’s ankles 🎾,Workout,0.0,2032,0.0,2022-02-10T02:35:25Z
-Dolo canvassing p2 ,Walk,13910.7,9704,160.7,2022-02-08T23:08:26Z
-Post-Craig on twitch canvassing ,Walk,16731.8,13056,334.5,2022-02-07T23:05:20Z
-Contemplating my inability to win tiebreakers,Walk,5717.5,4172,88.2,2022-02-07T02:18:15Z
-Jay if u could get your volleys in that’d be gr9,Workout,0.0,6533,0.0,2022-02-07T00:17:09Z
-Afternoon Walk,Walk,6004.7,4007,74.3,2022-02-06T22:37:49Z
-Evening Walk,Walk,3512.4,2564,89.2,2022-02-06T03:18:12Z
-Canvass for/with Bilal to chez maman ,Walk,15220.1,11919,231.6,2022-02-05T19:21:17Z
-"Post-GrowSF 🏓, gimlet, negroni ",Walk,2671.1,1810,87.3,2022-02-05T02:11:11Z
-W/ toogoodtogo ,Run,2226.1,834,48.8,2022-02-04T01:53:31Z
-Jog 2 TooGoodToGo ,Run,3896.8,1220,15.5,2022-02-04T01:27:23Z
-Bands visit to steph,Walk,4406.2,3142,92.3,2022-02-03T05:20:04Z
-Evening Run,Run,541.7,244,0.0,2022-02-03T03:16:03Z
-2.5 Asians LNY dubs 🎾,Workout,0.0,9569,0.0,2022-02-02T02:21:10Z
-Tennis ,Workout,0.0,4755,0.0,2022-02-01T03:10:17Z
-Late 2 🎾 ,Run,1898.2,652,0.0,2022-02-01T02:48:50Z
-Canvass 4 Bilal p2,Walk,8345.1,6555,118.0,2022-01-30T21:00:23Z
-Mixed dubs🎾 w/ the neurologist ,Workout,0.0,6370,0.0,2022-01-29T21:13:26Z
-Pre-mixed night 🎾 ,Workout,0.0,3410,0.0,2022-01-29T03:03:35Z
-I don’t always run into the vercel ceo walking but when I do it’s when I’m late for tennis ,Run,1929.2,676,0.0,2022-01-29T02:45:04Z
-One day I will not mess up hackathon demo time zones ,Walk,3477.1,2635,90.4,2022-01-28T22:47:32Z
-Dogpatch reminds me of pybay and devrelcon😭😭,Walk,5179.3,3413,11.8,2022-01-28T19:26:10Z
-Evening Walk w/ the danicats ,Walk,4679.2,3537,117.5,2022-01-28T04:42:21Z
-No time 4 pre-hot pot run too busy getting 147 peak twitch viewers lfg ,Walk,6856.3,4631,139.5,2022-01-28T01:19:44Z
-# hills 🤝 # zoom meetings = too dang high ,Run,11833.2,4173,200.6,2022-01-27T00:57:42Z
-Pre-phone banking post-lying to get out of tennis practice and then it happened #manifestation ,Run,3433.2,1077,0.0,2022-01-26T01:22:25Z
-Samwell singles ,Workout,0.0,3189,0.0,2022-01-25T00:06:06Z
-Late 2 tennis,Run,1616.1,556,0.0,2022-01-24T23:44:41Z
-Afternoon Walk,Walk,4959.8,5580,4.6,2022-01-23T23:21:42Z
-Canvas 4 Bilal x walk home x errands ,Walk,6784.7,5442,141.8,2022-01-22T21:06:55Z
-Morning Walk,Walk,3983.8,2737,37.5,2022-01-22T18:19:34Z
-Fri-yay,Run,4535.7,1543,23.1,2022-01-22T01:12:17Z
-Best stream night run ,Run,10829.3,3804,158.6,2022-01-21T01:36:00Z
-Humbling mixed dubs ,Workout,0.0,3659,0.0,2022-01-20T03:00:25Z
-Lunch Walk,Walk,5480.0,3989,124.8,2022-01-19T20:48:19Z
-Evening Activity,Workout,0.0,5946,0.0,2022-01-19T02:25:51Z
-Afternoon Walk,Walk,6114.2,3975,99.9,2022-01-19T01:02:15Z
-Afternoon Walk,Walk,4785.4,4020,31.2,2022-01-17T23:22:44Z
-🎾 round ✌🏼,Workout,0.0,2789,0.0,2022-01-17T02:30:04Z
-Mixed 9.0 @ Carlmont,Workout,0.0,4419,0.0,2022-01-16T19:20:37Z
-Lunch Walk,Walk,3334.8,2493,0.0,2022-01-14T19:48:44Z
-Afternoon Walk,Walk,4953.7,3510,111.6,2022-01-14T01:17:49Z
-Night Activity,Workout,0.0,2213,0.0,2022-01-13T06:55:30Z
-Night Ride,Ride,0.0,3255,0.0,2022-01-12T06:31:54Z

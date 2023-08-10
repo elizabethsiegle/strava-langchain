@@ -39,7 +39,7 @@ config = dotenv_values(".env")
 ACTIVITIES_URL = "https://www.strava.com/api/v3/athlete/activities"
 os.environ["OPENAI_API_KEY"] = config.get('OPENAI_API_KEY')
 os.environ["SENDGRID_API_KEY"] = config.get('SENDGRID_API_KEY')
-llm = ChatOpenAI(model_name='gpt-4-32k', temperature=0)
+llm = ChatOpenAI(model_name='gpt-4-32k', temperature=0.2)
 llm_math_chain = LLMMathChain.from_llm(llm=llm, verbose=True)
 
 
