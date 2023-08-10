@@ -1,6 +1,9 @@
 name,type,distance,moving_time,total_elevation_gain,start_date
+<<<<<<< HEAD
 Lunch Walk,Walk,1035.3,126,5.8,2023-07-21T18:39:07Z
 Afternoon Ride,Ride,1594.6,427,8.4,2023-07-21T00:37:08Z
+=======
+>>>>>>> tmp
 Morning Walk,Walk,1935.2,1388,0.0,2023-07-20T16:30:36Z
 Evening Tennis,Workout,0.0,5262,0.0,2023-07-20T02:35:37Z
 Evening Walk,Walk,1967.1,1307,5.8,2023-07-20T02:11:51Z
@@ -199,8 +202,13 @@ Afternoon Ride,Ride,6302.5,1645,77.8,2023-05-10T22:19:54Z
 Night Walk,Walk,1773.9,1409,67.0,2023-05-10T05:27:59Z
 Evening Walk,Walk,1843.2,1212,36.2,2023-05-10T02:38:45Z
 Afternoon Ride,Ride,6369.4,1634,91.8,2023-05-10T00:39:13Z
+<<<<<<< HEAD
 Walk to coffee and conference,Walk,2681.5,1909,5.6,2022-07-27T12:20:26Z
 Dumplings to cannolis to bike back pipeline,Ride,3356.7,1295,20.6,2022-07-27T03:13:14Z
+=======
+Afternoon Ride,Ride,6215.1,1624,83.2,2023-05-09T22:22:18Z
+Evening Walk,Walk,907.9,1,0.0,2023-05-09T01:07:29Z
+>>>>>>> tmp
 "Easy mon-yay, hard borough hills ",Run,5267.7,2274,64.3,2022-07-26T01:12:51Z
 Monterey bay with ami! ,Rowing,0.0,2860,0.0,2022-07-24T20:58:31Z
 Monter-yay,Walk,1481.6,1464,8.0,2022-07-24T18:47:55Z
@@ -399,3 +407,8 @@ Afternoon Walk,Walk,4785.4,4020,31.2,2022-01-17T23:22:44Z
 Mixed 9.0 @ Carlmont,Workout,0.0,4419,0.0,2022-01-16T19:20:37Z
 Lunch Walk,Walk,3334.8,2493,0.0,2022-01-14T19:48:44Z
 Afternoon Walk,Walk,4953.7,3510,111.6,2022-01-14T01:17:49Z
+<<<<<<< HEAD
+=======
+Night Activity,Workout,0.0,2213,0.0,2022-01-13T06:55:30Z
+Night Ride,Ride,0.0,3255,0.0,2022-01-12T06:31:54Z
+>>>>>>> tmp

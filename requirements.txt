@@ -1,0 +1,11 @@
+langchain==0.0.261
+numpy==1.25.0
+pandas==2.0.3
+python-dotenv==1.0.0
+PyYAML==6.0.1
+PyYAML==6.0.1
+reportlab==4.0.4
+Requests==2.31.0
+sendgrid==6.10.0
+streamlit==1.24.1
+urllib3==2.0.4
