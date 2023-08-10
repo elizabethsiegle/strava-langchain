@@ -1,4 +1,4 @@
-chromadb==*
+chromadb==23.2.1
 google-search-results==*
 langchain==0.0.261
 numpy==1.25.0
