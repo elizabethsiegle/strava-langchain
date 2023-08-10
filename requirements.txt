@@ -8,4 +8,5 @@ reportlab==4.0.4
 Requests==2.31.0
 sendgrid==6.10.0
 streamlit==1.25.0
+tabulate==*
 urllib3==2.0.4
