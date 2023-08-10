@@ -1,3 +1,5 @@
+chromadb==*
+google-search-results==*
 langchain==0.0.261
 numpy==1.25.0
 openai==0.27.2
