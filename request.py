@@ -208,21 +208,7 @@ with st.form('my_form'):
             activities = activities[activities["start_date"].str.contains(
                 "2021") == False]
             activities.to_csv('data_files/activities.csv', index=False)
-
-            # loop through activities data frame to get number of activities of each type
-            # num_runs = len(activities.loc[activities['type'] == 'Run'])
-            # num_walks = len(activities.loc[(activities['type'] == 'Walk') & (activities['total_elevation_gain'] > 90)])
-            # num_rides = len(activities.loc[activities['type'] == 'Ride'])
-            # num_elliptical = len(activities.loc[activities['type'] == 'Elliptical'])
-            # num_weight_training = len(activities.loc[activities['type'] == 'WeightTraining'])
-            # num_swims = 0
-            # num_tennis = 0
-            # for i in activities['name'].values:
-            #     if 'swim' in i.lower():
-            #         num_swims +=1
-            #     if 'tennis' in i.lower():
-            #         num_tennis +=1
-            # cross_training_options = activities['type'].unique()
+            
             # make CSV of runs
             runs = activities.loc[activities['type'] == 'Run']
             # index=False writes out weird unnamed index column in pandas df
