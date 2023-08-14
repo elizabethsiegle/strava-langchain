@@ -1,5 +1,6 @@
 """Module for regex support"""
 import re
+import json
 from datetime import date, datetime
 import os
 import base64
@@ -160,17 +161,28 @@ with st.form('my_form'):
     training_start_date = dates[0]
     marathon_date = dates[1]
     submitted = st.form_submit_button('Submit')
+    VALIDANSWERS = True
     if submitted:
         if not validate_email(email):
             st.error("invalid email", icon="🚨")
             st.cache_data()
+            VALIDANSWERS = False
         elif training_start_date > marathon_date:
             st.error("Start date must be earlier than end date", icon="🚨")
             st.cache_data()
+            VALIDANSWERS = False     
         try:
+            r = requests.get('https://www.strava.com/api/v3/activities?access_token=' + strava_token_input)
+            r.raise_for_status()
+            VALIDANSWERS = True
+        except requests.exceptions.HTTPError as e:
+            print(e)
+            st.error("Check Strava token")
+            st.cache_data()
+            VALIDANSWERS = False
+        if VALIDANSWERS:
             success = st.success(
                 "Thank you for inputting valid dates and emails! Plan is being generated.")  # st.write
-            # config.get('STRAVA_TOKEN')}
             header = {'Authorization': 'Bearer ' + strava_token_input}
             # max 200 per page, can only do 1 page at a time
             params = {'per_page': 200, 'page': 1}
@@ -348,5 +360,3 @@ with st.form('my_form'):
                     f"Response Code: {response.status_code} \n Message sent!")
             else:
                 st.warning("Email not sent--check email")
-        except TypeError:
-            st.error("Check Strava Token")
